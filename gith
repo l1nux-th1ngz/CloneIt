@@ -1,46 +1,21 @@
 #!/bin/bash
 
-# Configuration file
-config_file="$HOME/.github_download_config"
+# Function to clone GitHub repositories
+clone_github_repositories() {
+    access_token="$1"
+    repositories=("your_github_repo1" "your_github_repo2" "your_github_repo3")
 
-# Read the last used directory and GitHub credentials from the config file
-if [ -f "$config_file" ]; then
-    source "$config_file"
-else
-    # Set default values if the config file doesn't exist
-    last_used_directory="$HOME"
-    github_username=""
-    github_token=""
-fi
-
-# Function to prompt for GitHub credentials and download directory
-get_credentials_and_directory() {
-    github_username=$(zenity --entry --title="GitHub Credentials" --text="Enter your GitHub username:" --entry-text="$github_username")
-    github_token=$(zenity --password --title="GitHub Credentials" --text="Enter your GitHub personal access token:" --entry-text="$github_token")
-    last_used_directory=$(zenity --file-selection --directory --title="Select Download Directory" --filename="$last_used_directory")
-    
-    # Save the configuration to the file
-    echo "last_used_directory=\"$last_used_directory\"" > "$config_file"
-    echo "github_username=\"$github_username\"" >> "$config_file"
-    echo "github_token=\"$github_token\"" >> "$config_file"
+    for repo in "${repositories[@]}"; do
+        git clone --quiet "https://$access_token@github.com/your_username/$repo.git"
+    done
 }
 
-# If either GitHub username or token is empty, prompt for credentials
-if [ -z "$github_username" ] || [ -z "$github_token" ]; then
-    get_credentials_and_directory
-fi
+# Get GitHub credentials
+github_username=$(whiptail --inputbox "Enter your GitHub username:" 10 60 --title "GitHub Login" 3>&1 1>&2 2>&3)
+github_token=$(whiptail --passwordbox "Enter your GitHub personal access token:" 10 60 --title "GitHub Login" 3>&1 1>&2 2>&3)
 
-# Replace placeholders with the obtained credentials and directory
-github_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
+# Clone GitHub repositories
+clone_github_repositories "$github_token"
 
-# Clone repositories in the background
-for repo in "${github_repositories[@]}"; do
-    git clone --quiet "https://$github_token@github.com/$github_username/$repo.git" "$last_used_directory/$repo" &
-done
-
-# Wait for all background jobs to finish
-wait
-
-# Keep the script running until manually closed
-zenity --info --title="Download Complete" --text="Downloads have finished. You can close this window when ready."
-sleep infinity
+# Display success message
+whiptail --msgbox "GitHub repositories cloned successfully." 10 60 --title "Success"
