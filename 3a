@@ -27,7 +27,7 @@ current_user=$(whoami)
 
 # Welcome message
 whiptail --title "AUR Downloader" --msgbox --scrolltext --center "\
-##################################################################### Hello $current_user #####################################################################
+Hello $current_user
 
 What are we doing today?
 
