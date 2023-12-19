@@ -12,8 +12,8 @@ clone_repo() {
 
 # Ask the user if they want to log in
 whiptail --title "GitLab Clone" --yesno "Would you like to login to your GitLab account?" 10 60 \
-    --yes-button "$(tput setaf 2)YES$(tput sgr0)" \
-    --no-button "$(tput setaf 1)NO$(tput sgr0)"
+    --yes-button "\e[32mYES\e[0m" \
+    --no-button "\e[31mNO\e[0m"
 
 response=$?
 
