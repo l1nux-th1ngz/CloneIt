@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Prompt user for GitHub credentials
+github_username=$(zenity --entry --title="GitHub Credentials" --text="Enter your GitHub username:")
+github_token=$(zenity --password --title="GitHub Credentials" --text="Enter your GitHub personal access token:")
+
+# Replace placeholders with the obtained credentials
+github_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
+
+# Clone repositories in the background
+for repo in "${github_repositories[@]}"; do
+    git clone --quiet "https://$github_token@github.com/$github_username/$repo.git" &
+done
+
+# Wait for all background jobs to finish
+wait
+
+# Keep the script running until manually closed
+zenity --info --title="Download Complete" --text="Downloads have finished. You can close this window when ready."
+sleep infinity
