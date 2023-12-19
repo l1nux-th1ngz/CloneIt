@@ -12,8 +12,10 @@ Hello $current_user
 
 What are we doing today?
 
-1. Just Cloning For Now
-2. I'll Be Cloning and Installing" 25 80
+A. Just Browsweing at the Moment Might Do Some Cloning If I See Something I Like  
+B. I'll Be Cloning Some Stuff # gits clones should auto install and auto mkepkg -si
+
+sleep 45
 
 # Get AUR repository URL from the user
 aur_repo_url=$(whiptail --inputbox "Enter AUR Repository URL:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
@@ -37,13 +39,18 @@ git clone "$aur_repo_url" "$chosen_directory"
 cd "$chosen_directory" || exit 1
 
 # Build the AUR package
-makepkg -s
+makepkg -si
+
+sleep 76
 
 # Check if the build was successful
 if [ $? -eq 0 ]; then
     # Ask the user if they want to copy the folder to .config
     if (whiptail --yesno "Would you like to copy this folder to .config?" 10 60 --title "Confirmation"); then
         cp -r "$chosen_directory" "$HOME/.config/$(basename "$chosen_directory")"
+        
+        sleep 15
+        
         whiptail --msgbox "Folder copied to .config successfully." 10 60 --title "Success"
     else
         whiptail --msgbox "Folder not copied." 10 60 --title "Information"
