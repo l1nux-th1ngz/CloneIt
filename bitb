@@ -1,46 +1,21 @@
 #!/bin/bash
 
-# Configuration file
-config_file="$HOME/.bitbucket_download_config"
+# Function to clone Bitbucket repositories
+clone_bitbucket_repositories() {
+    access_token="$1"
+    repositories=("your_bitbucket_repo1" "your_bitbucket_repo2" "your_bitbucket_repo3")
 
-# Read the last used directory and Bitbucket credentials from the config file
-if [ -f "$config_file" ]; then
-    source "$config_file"
-else
-    # Set default values if the config file doesn't exist
-    last_used_directory="$HOME"
-    bitbucket_username=""
-    bitbucket_app_password=""
-fi
-
-# Function to prompt for Bitbucket credentials and download directory
-get_credentials_and_directory() {
-    bitbucket_username=$(zenity --entry --title="Bitbucket Credentials" --text="Enter your Bitbucket username:" --entry-text="$bitbucket_username")
-    bitbucket_app_password=$(zenity --password --title="Bitbucket Credentials" --text="Enter your Bitbucket app password:" --entry-text="$bitbucket_app_password")
-    last_used_directory=$(zenity --file-selection --directory --title="Select Download Directory" --filename="$last_used_directory")
-    
-    # Save the configuration to the file
-    echo "last_used_directory=\"$last_used_directory\"" > "$config_file"
-    echo "bitbucket_username=\"$bitbucket_username\"" >> "$config_file"
-    echo "bitbucket_app_password=\"$bitbucket_app_password\"" >> "$config_file"
+    for repo in "${repositories[@]}"; do
+        git clone --quiet "https://your_username:$access_token@bitbucket.org/your_username/$repo.git"
+    done
 }
 
-# If either Bitbucket username or app password is empty, prompt for credentials
-if [ -z "$bitbucket_username" ] || [ -z "$bitbucket_app_password" ]; then
-    get_credentials_and_directory
-fi
+# Get Bitbucket credentials
+bitbucket_username=$(whiptail --inputbox "Enter your Bitbucket username:" 10 60 --title "Bitbucket Login" 3>&1 1>&2 2>&3)
+bitbucket_token=$(whiptail --passwordbox "Enter your Bitbucket app password:" 10 60 --title "Bitbucket Login" 3>&1 1>&2 2>&3)
 
-# Replace placeholders with the obtained credentials and directory
-bitbucket_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
+# Clone Bitbucket repositories
+clone_bitbucket_repositories "$bitbucket_token"
 
-# Clone repositories in the background
-for repo in "${bitbucket_repositories[@]}"; do
-    git clone --quiet "https://$bitbucket_username:$bitbucket_app_password@bitbucket.org/$bitbucket_username/$repo.git" "$last_used_directory/$repo" &
-done
-
-# Wait for all background jobs to finish
-wait
-
-# Keep the script running until manually closed
-zenity --info --title="Download Complete" --text="Downloads have finished. You can close this window when ready."
-sleep infinity
+# Display success message
+whiptail --msgbox "Bitbucket repositories cloned successfully." 10 60 --title "Success"
