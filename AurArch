@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Function to clone the AUR repository
+clone_repo() {
+    repo_url="$1"
+    download_dir="$2"
+
+    # Clone the repository
+    git clone "$repo_url" "$download_dir"
+}
+
 # Function to clone the AUR repository and install the package
 clone_and_install() {
     repo_url="$1"
@@ -14,27 +23,37 @@ clone_and_install() {
 }
 
 # Get AUR repository URL and download directory from user
+options=$(whiptail --checklist "Choose an action:" 15 60 2 "Clone Only" off "Clone and Install" off --title "AUR Downloader" 3>&1 1>&2 2>&3)
 aur_repo_url=$(whiptail --inputbox "Enter AUR Repository URL:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
 download_dir=$(whiptail --inputbox "Enter Download Directory:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
 
 # Verify the input is not empty
-if [ -z "$aur_repo_url" ] || [ -z "$download_dir" ]; then
-    whiptail --msgbox "Repository URL and download directory cannot be empty. Exiting." 10 60 --title "Error" --exitstatus 1
+if [ -z "$options" ] || [ -z "$aur_repo_url" ] || [ -z "$download_dir" ]; then
+    whiptail --msgbox "Options, repository URL, and download directory cannot be empty. Exiting." 10 60 --title "Error" --exitstatus 1
     exit 1
 fi
 
-# Clone the repository and install the AUR package
-clone_and_install "$aur_repo_url" "$download_dir"
+# Process user's choice
+for option in $options; do
+    case $option in
+        "Clone Only")
+            clone_repo "$aur_repo_url" "$download_dir"
+            whiptail --msgbox "Repository cloned successfully." 10 60 --title "Success"
+            ;;
+        "Clone and Install")
+            clone_and_install "$aur_repo_url" "$download_dir"
+            # Ask the user if they want to copy and link the folder in .config
+            whiptail --yesno "Hello! Would you like to copy and link this folder in your .config?" 10 60 --title "Confirmation"
+            response=$?
 
-# Ask the user if they want to copy and link the folder in .config
-whiptail --yesno "Hello! Would you like to copy and link this folder in your .config?" 10 60 --title "Confirmation"
-response=$?
-
-# Interpret the user's response
-if [ $response -eq 0 ]; then
-    cp -r "$download_dir" "$HOME/.config/"
-    ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
-    whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
-else
-    whiptail --msgbox "Folder not copied or linked." 10 60 --title "Information"
-fi
+            # Interpret the user's response
+            if [ $response -eq 0 ]; then
+                cp -r "$download_dir" "$HOME/.config/"
+                ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
+                whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
+            else
+                whiptail --msgbox "Folder not copied or linked." 10 60 --title "Information"
+            fi
+            ;;
+    esac
+done
