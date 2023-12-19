@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# GitHub repository URL
+repo_url="https://github.com/username/repository"
+
+# Folder path within the repository to download
+folder_path="path/to/folder"
+
+# Destination folder on your local machine
+destination_folder="local_folder"
+
+# Number of download retries
+retries=3
+
+# Hide the git clone command
+echo "Downloading folder from GitHub..."
+
+# Attempt to download the ZIP archive with retries
+for ((i=1; i<=$retries; i++)); do
+    curl -LkSs "$repo_url/archive/refs/heads/main.zip" -o "$destination_folder.zip"
+    if [ $? -eq 0 ]; then
+        break
+    elif [ $i -eq $retries ]; then
+        echo "Failed to download ZIP file after $retries retries."
+        exit 1
+    else
+        echo "Retry $i/$retries..."
+    fi
+done
+
+# Unzip the archive and remove unnecessary files
+unzip -qq "$destination_folder.zip" "$repo_url-main/$folder_path/*" -d "$destination_folder"
+rm "$destination_folder.zip"
+
+# Provide success message
+echo "Folder downloaded successfully to: $destination_folder"
