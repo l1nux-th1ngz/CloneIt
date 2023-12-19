@@ -16,17 +16,16 @@ clone_and_install() {
 
     # Check if the installation was successful
     if [ $? -eq 0 ]; then
-        # Ask the user if they want to copy and link the folder in .config
-        whiptail --yesno "Would you like to copy and link this folder in .config?" 10 60 --title "Confirmation"
+        # Ask the user if they want to copy the folder to .config
+        whiptail --yesno "Would you like to copy this folder to .config?" 10 60 --title "Confirmation"
         response=$?
 
         # Interpret the user's response
         if [ $response -eq 0 ]; then
-            cp -r "$chosen_directory" "$HOME/.config/"
-            ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
-            whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
+            cp -r "$chosen_directory" "$HOME/.config/$(basename "$chosen_directory")"
+            whiptail --msgbox "Folder copied to .config successfully." 10 60 --title "Success"
         else
-            whiptail --msgbox "Folder not copied or linked." 10 60 --title "Information"
+            whiptail --msgbox "Folder not copied." 10 60 --title "Information"
         fi
     else
         whiptail --msgbox "Installation failed. Please check the build output." 10 60 --title "Error"
