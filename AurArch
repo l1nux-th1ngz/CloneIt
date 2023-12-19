@@ -25,7 +25,7 @@ clone_and_install() {
 # Get AUR repository URL and download directory from user
 options=$(whiptail --checklist "Choose an action:" 15 60 2 "Clone Only" off "Clone and Install" off --title "AUR Downloader" 3>&1 1>&2 2>&3)
 aur_repo_url=$(whiptail --inputbox "Enter AUR Repository URL:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
-download_dir=$(whiptail --inputbox "Enter Download Directory:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
+download_dir=$(whiptail --title "Select Download Directory" --file-selection --directory --title "AUR Downloader" 3>&1 1>&2 2>&3)
 
 # Verify the input is not empty
 if [ -z "$options" ] || [ -z "$aur_repo_url" ] || [ -z "$download_dir" ]; then
@@ -42,6 +42,7 @@ for option in $options; do
             ;;
         "Clone and Install")
             clone_and_install "$aur_repo_url" "$download_dir"
+            
             # Ask the user if they want to copy and link the folder in .config
             whiptail --yesno "Hello! Would you like to copy and link this folder in your .config?" 10 60 --title "Confirmation"
             response=$?
