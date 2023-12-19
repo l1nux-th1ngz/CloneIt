@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Prompt user for GitHub repository URL
+repo_url=$(zenity --entry --title="GitHub Repository URL" --text="Enter GitHub repository URL:" --width=400)
+
+# Check if the user clicked Cancel or closed the dialog
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# Prompt user for the folder path within the repository
+folder_path=$(zenity --entry --title="Folder Path" --text="Enter folder path within the repository:" --width=400)
+
+# Check if the user clicked Cancel or closed the dialog
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# Prompt user for destination folder on the local machine
+destination_folder=$(zenity --file-selection --directory --title="Select Destination Folder")
+
+# Check if the user clicked Cancel or closed the dialog
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+# Download the ZIP archive of the specified folder
+curl -LkSs "$repo_url/archive/refs/heads/main.zip" -o "$destination_folder.zip"
+
+# Unzip the archive and remove unnecessary files
+unzip -qq "$destination_folder.zip" "$repo_url-main/$folder_path/*" -d "$destination_folder"
+rm "$destination_folder.zip"
+
+# Provide success message
+zenity --info --title="Success" --text="Folder downloaded successfully to: $destination_folder"
