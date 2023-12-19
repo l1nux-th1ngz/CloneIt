@@ -42,7 +42,7 @@ makepkg -s
 # Check if the build was successful
 if [ $? -eq 0 ]; then
     # Install the AUR package
-    sudo makepkg -si
+    makepkg -si
 
     # Check if the installation was successful
     if [ $? -eq 0 ]; then
