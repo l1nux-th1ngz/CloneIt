@@ -1,46 +1,21 @@
 #!/bin/bash
 
-# Configuration file
-config_file="$HOME/.codeberg_download_config"
+# Function to clone Codeberg repositories
+clone_codeberg_repositories() {
+    access_token="$1"
+    repositories=("your_codeberg_repo1" "your_codeberg_repo2" "your_codeberg_repo3")
 
-# Read the last used directory and Codeberg credentials from the config file
-if [ -f "$config_file" ]; then
-    source "$config_file"
-else
-    # Set default values if the config file doesn't exist
-    last_used_directory="$HOME"
-    codeberg_username=""
-    codeberg_token=""
-fi
-
-# Function to prompt for Codeberg credentials and download directory
-get_credentials_and_directory() {
-    codeberg_username=$(zenity --entry --title="Codeberg Credentials" --text="Enter your Codeberg username:" --entry-text="$codeberg_username")
-    codeberg_token=$(zenity --password --title="Codeberg Credentials" --text="Enter your Codeberg personal access token:" --entry-text="$codeberg_token")
-    last_used_directory=$(zenity --file-selection --directory --title="Select Download Directory" --filename="$last_used_directory")
-    
-    # Save the configuration to the file
-    echo "last_used_directory=\"$last_used_directory\"" > "$config_file"
-    echo "codeberg_username=\"$codeberg_username\"" >> "$config_file"
-    echo "codeberg_token=\"$codeberg_token\"" >> "$config_file"
+    for repo in "${repositories[@]}"; do
+        git clone --quiet "https://$access_token@codeberg.org/your_username/$repo.git"
+    done
 }
 
-# If either Codeberg username or token is empty, prompt for credentials
-if [ -z "$codeberg_username" ] || [ -z "$codeberg_token" ]; then
-    get_credentials_and_directory
-fi
+# Get Codeberg credentials
+codeberg_username=$(whiptail --inputbox "Enter your Codeberg username:" 10 60 --title "Codeberg Login" 3>&1 1>&2 2>&3)
+codeberg_token=$(whiptail --passwordbox "Enter your Codeberg personal access token:" 10 60 --title "Codeberg Login" 3>&1 1>&2 2>&3)
 
-# Replace placeholders with the obtained credentials and directory
-codeberg_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
+# Clone Codeberg repositories
+clone_codeberg_repositories "$codeberg_token"
 
-# Clone repositories in the background
-for repo in "${codeberg_repositories[@]}"; do
-    git clone --quiet "https://$codeberg_token@codeberg.org/$codeberg_username/$repo.git" "$last_used_directory/$repo" &
-done
-
-# Wait for all background jobs to finish
-wait
-
-# Keep the script running until manually closed
-zenity --info --title="Download Complete" --text="Downloads have finished. You can close this window when ready."
-sleep infinity
+# Display success message
+whiptail --msgbox "Codeberg repositories cloned successfully." 10 60 --title "Success"
