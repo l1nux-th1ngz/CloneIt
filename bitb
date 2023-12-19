@@ -1,21 +1,32 @@
 #!/bin/bash
 
-# Function to clone Bitbucket repositories
-clone_bitbucket_repositories() {
-    access_token="$1"
-    repositories=("your_bitbucket_repo1" "your_bitbucket_repo2" "your_bitbucket_repo3")
+# Function to clone the Bitbucket repository
+clone_repo() {
+    repo_url="$1"
+    username="$2"
+    password="$3"
 
-    for repo in "${repositories[@]}"; do
-        git clone --quiet "https://your_username:$access_token@bitbucket.org/your_username/$repo.git"
-    done
+    # Use username and password (or access token) for authentication
+    git clone "https://$username:$password@$repo_url"
 }
 
-# Get Bitbucket credentials
-bitbucket_username=$(whiptail --inputbox "Enter your Bitbucket username:" 10 60 --title "Bitbucket Login" 3>&1 1>&2 2>&3)
-bitbucket_token=$(whiptail --passwordbox "Enter your Bitbucket app password:" 10 60 --title "Bitbucket Login" 3>&1 1>&2 2>&3)
+# Ask the user if they want to log in
+whiptail --title "Bitbucket Clone" --yesno "Would you like to login to your Bitbucket account?" 10 60 \
+    --yes-button "$(tput setaf 2)YES$(tput sgr0)" \
+    --no-button "$(tput setaf 1)NO$(tput sgr0)"
 
-# Clone Bitbucket repositories
-clone_bitbucket_repositories "$bitbucket_token"
+response=$?
 
-# Display success message
-whiptail --msgbox "Bitbucket repositories cloned successfully." 10 60 --title "Success"
+if [ $response -eq 0 ]; then
+    # If yes, ask for username and password
+    username=$(whiptail --inputbox "Enter your Bitbucket username:" 10 60 3>&1 1>&2 2>&3)
+    password=$(whiptail --passwordbox "Enter your Bitbucket password:" 10 60 3>&1 1>&2 2>&3)
+else
+    # If no, set empty values
+    username=""
+    password=""
+fi
+
+# Next screen: Bitbucket list (you can implement the list here)
+
+# Your logic for cloning the repository goes here
