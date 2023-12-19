@@ -11,7 +11,9 @@ clone_repo() {
 }
 
 # Ask the user if they want to log in
-whiptail --title "GitHub Clone" --yesno "Would you like to login to your GitHub account?" 10 60
+whiptail --title "GitHub Clone" --yesno "Would you like to login to your GitHub account?" 10 60 \
+    --yes-button "$(tput setaf 2)YES$(tput sgr0)" \
+    --no-button "$(tput setaf 1)NO$(tput sgr0)"
 
 response=$?
 
