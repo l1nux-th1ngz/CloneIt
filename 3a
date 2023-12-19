@@ -8,8 +8,29 @@ clone_and_install() {
     # Clone the repository
     git clone "$repo_url" "$chosen_directory"
 
-    # Navigate to the downloaded directory and install the AUR package
-    (cd "$chosen_directory" && makepkg -si)
+    # Navigate to the downloaded directory
+    cd "$chosen_directory" || exit 1
+
+    # Build and install the AUR package
+    makepkg -si
+
+    # Check if the installation was successful
+    if [ $? -eq 0 ]; then
+        # Ask the user if they want to copy and link the folder in .config
+        whiptail --yesno "Would you like to copy and link this folder in .config?" 10 60 --title "Confirmation"
+        response=$?
+
+        # Interpret the user's response
+        if [ $response -eq 0 ]; then
+            cp -r "$chosen_directory" "$HOME/.config/"
+            ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
+            whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
+        else
+            whiptail --msgbox "Folder not copied or linked." 10 60 --title "Information"
+        fi
+    else
+        whiptail --msgbox "Installation failed. Please check the build output." 10 60 --title "Error"
+    fi
 }
 
 # Get the current username
@@ -24,7 +45,7 @@ What are we doing today?
 1. Just Cloning For Now
 2. I'll Be Cloning and Installing" 25 80
 
-# Get AUR repository URL and chosen directory from user
+# Get AUR repository URL and chosen directory from the user
 aur_repo_url=$(whiptail --inputbox "Enter AUR Repository URL:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
 chosen_directory=$(whiptail --inputbox "Enter Download Directory:" 10 60 --title "AUR Downloader" "$HOME/" 3>&1 1>&2 2>&3)
 
@@ -49,19 +70,6 @@ case $operation in
     "2")
         # Clone the repository and install the AUR package
         clone_and_install "$aur_repo_url" "$chosen_directory"
-
-        # Ask the user if they want to copy and link the folder in .config
-        whiptail --yesno "Would you like to copy and link this folder in .config?" 10 60 --title "Confirmation"
-        response=$?
-
-        # Interpret the user's response
-        if [ $response -eq 0 ]; then
-            cp -r "$chosen_directory" "$HOME/.config/"
-            ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
-            whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
-        else
-            whiptail --msgbox "Folder not copied or linked." 10 60 --title "Information"
-        fi
         ;;
     *)
         whiptail --msgbox "Invalid option. Exiting." 10 60 --title "Error"
