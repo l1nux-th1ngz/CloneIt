@@ -10,12 +10,12 @@ current_user=$(whoami)
 echo "Hello $current_user"
 echo "What are we doing today?"
 
-options=("B) Just Cloning For Now" "A) I'll Be Cloning and Installing")
+options=("Just Cloning For Now" "I'll Be Cloning and Installing")
 
 select opt in "${options[@]}"
 do
     case $opt in
-        "B) Just Cloning For Now")
+        "Just Cloning For Now")
             echo "You chose to just clone for now."
             
             # Get AUR repository URL from the user
@@ -34,11 +34,11 @@ do
             chosen_directory=$HOME/Git-Clones/$repo_name
 
             # Clone the repository
-            git clone "$aur_repo_url" "$chosen_directory" &
+            git clone "$aur_repo_url" "$chosen_directory" && cd "$chosen_directory"
             
             break
             ;;
-        "A) I'll Be Cloning and Installing")
+        "I'll Be Cloning and Installing")
             echo "You chose to clone and install."
             
             # Get AUR repository URL from the user
