@@ -3,34 +3,70 @@
 # Function to clone the AUR repository
 clone_repo() {
     repo_url="$1"
-    download_dir="$2"
+    AUR_Downloads="$2"
 
     # Clone the repository
-    git clone "$repo_url" "$download_dir"
+    git clone "$repo_url" "$AUR_Downloads"
 }
 
 # Function to clone the AUR repository and install the package
 clone_and_install() {
     repo_url="$1"
-    download_dir="$2"
+    AUR_Downloads="$2"
 
     # Clone the repository
-    git clone "$repo_url" "$download_dir"
+    git clone "$repo_url" "$AUR_Downloads"
 
     # Install the AUR package
-    cd "$download_dir" || exit 1
+    cd "$AUR_Downloads" || exit 1
     makepkg -si
 }
 
-# Greet the user and provide options
-options=$(whiptail --title "AUR Downloader" --menu "Hello <username>, what would you like to do today?" 15 60 2 "Just Cloning" "" "Clone & Install" "" 3>&1 1>&2 2>&3)
+# Get the current username
+current_user=$(whoami)
 
-# Get AUR repository URL and download directory from user
+# Create the AUR_Downloads directory if it doesn't exist
+mkdir -p "$HOME/AUR_Downloads"
+
+# Greet the user with a custom welcome screen (centered)
+whiptail --title "AUR Downloader" --msgbox --scrolltext "\
+##################################################################### Hello $current_user #####################################################################
+
+What are we doing today?
+
+Bar 1: Just Cloning For Now
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+
+Bar 2: I'll Be Cloning and Installing
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10" 25 80 0
+
+# Greet the user and provide options
+options=$(whiptail --title "AUR Downloader" --menu "What would you like to do today?" 15 60 2 "Just Cloning" "" "Clone & Install" "" 3>&1 1>&2 2>&3)
+
+# Get AUR repository URL and chosen directory from user
 aur_repo_url=$(whiptail --inputbox "Enter AUR Repository URL:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
-download_dir=$(whiptail --inputbox "Enter Download Directory:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
+AUR_Downloads=$(whiptail --title "Select AUR_Downloads Directory" --file-selection --directory --title "AUR Downloader" --default-item "$HOME/AUR_Downloads" 3>&1 1>&2 2>&3)
 
 # Verify the input is not empty
-if [ -z "$options" ] || [ -z "$aur_repo_url" ] || [ -z "$download_dir" ]; then
+if [ -z "$options" ] || [ -z "$aur_repo_url" ] || [ -z "$AUR_Downloads" ]; then
     whiptail --msgbox "Options, repository URL, and download directory cannot be empty. Exiting." 10 60 --title "Error" --exitstatus 1
     exit 1
 fi
@@ -39,12 +75,12 @@ fi
 case $options in
     "Just Cloning")
         # Clone the repository
-        clone_repo "$aur_repo_url" "$download_dir"
+        clone_repo "$aur_repo_url" "$AUR_Downloads"
         whiptail --msgbox "Repository cloned successfully." 10 60 --title "Success"
         ;;
     "Clone & Install")
         # Clone the repository and install the AUR package
-        clone_and_install "$aur_repo_url" "$download_dir"
+        clone_and_install "$aur_repo_url" "$AUR_Downloads"
 
         # Ask the user if they want to copy and link the folder in .config
         whiptail --yesno "Hello! Would you like to copy and link this folder in your .config?" 10 60 --title "Confirmation"
@@ -52,7 +88,7 @@ case $options in
 
         # Interpret the user's response
         if [ $response -eq 0 ]; then
-            cp -r "$download_dir" "$HOME/.config/"
+            cp -r "$AUR_Downloads" "$HOME/.config/"
             ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
             whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
         else
