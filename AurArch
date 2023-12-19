@@ -22,10 +22,12 @@ clone_and_install() {
     makepkg -si
 }
 
+# Greet the user and provide options
+options=$(whiptail --title "AUR Downloader" --menu "Hello <username>, what would you like to do today?" 15 60 2 "Just Cloning" "" "Clone & Install" "" 3>&1 1>&2 2>&3)
+
 # Get AUR repository URL and download directory from user
-options=$(whiptail --checklist "Choose an action:" 15 60 2 "Clone Only" off "Clone and Install" off --title "AUR Downloader" 3>&1 1>&2 2>&3)
 aur_repo_url=$(whiptail --inputbox "Enter AUR Repository URL:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
-download_dir=$(whiptail --title "Select Download Directory" --file-selection --directory --title "AUR Downloader" 3>&1 1>&2 2>&3)
+download_dir=$(whiptail --inputbox "Enter Download Directory:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
 
 # Verify the input is not empty
 if [ -z "$options" ] || [ -z "$aur_repo_url" ] || [ -z "$download_dir" ]; then
@@ -34,27 +36,31 @@ if [ -z "$options" ] || [ -z "$aur_repo_url" ] || [ -z "$download_dir" ]; then
 fi
 
 # Process user's choice
-for option in $options; do
-    case $option in
-        "Clone Only")
-            clone_repo "$aur_repo_url" "$download_dir"
-            whiptail --msgbox "Repository cloned successfully." 10 60 --title "Success"
-            ;;
-        "Clone and Install")
-            clone_and_install "$aur_repo_url" "$download_dir"
-            
-            # Ask the user if they want to copy and link the folder in .config
-            whiptail --yesno "Hello! Would you like to copy and link this folder in your .config?" 10 60 --title "Confirmation"
-            response=$?
+case $options in
+    "Just Cloning")
+        # Clone the repository
+        clone_repo "$aur_repo_url" "$download_dir"
+        whiptail --msgbox "Repository cloned successfully." 10 60 --title "Success"
+        ;;
+    "Clone & Install")
+        # Clone the repository and install the AUR package
+        clone_and_install "$aur_repo_url" "$download_dir"
 
-            # Interpret the user's response
-            if [ $response -eq 0 ]; then
-                cp -r "$download_dir" "$HOME/.config/"
-                ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
-                whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
-            else
-                whiptail --msgbox "Folder not copied or linked." 10 60 --title "Information"
-            fi
-            ;;
-    esac
-done
+        # Ask the user if they want to copy and link the folder in .config
+        whiptail --yesno "Hello! Would you like to copy and link this folder in your .config?" 10 60 --title "Confirmation"
+        response=$?
+
+        # Interpret the user's response
+        if [ $response -eq 0 ]; then
+            cp -r "$download_dir" "$HOME/.config/"
+            ln -s "$HOME/.config/$(basename "$aur_repo_url" .git)" "$HOME/"
+            whiptail --msgbox "Folder copied and linked successfully." 10 60 --title "Success"
+        else
+            whiptail --msgbox "Folder not copied or linked." 10 60 --title "Information"
+        fi
+        ;;
+    *)
+        whiptail --msgbox "Invalid option. Exiting." 10 60 --title "Error"
+        exit 1
+        ;;
+esac
