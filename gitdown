@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Temporary file to store GitHub repository URLs
+temp_list_file="gitpkg_temp.list"
+
+# File to store the last used directory
+config_file="$HOME/.github_download_config"
+
+# Trap function to clean up temporary files on script exit
+cleanup() {
+    rm -f "$temp_list_file"
+}
+
+# Set the trap to call the cleanup function on exit
+trap cleanup EXIT
+
+# Get the window ID of the root window (assuming you are running this in X11)
+parent_window_id=$(xwininfo -root | grep 'Window id' | awk '{print $4}')
+
+# Loop to interactively add GitHub repository URLs to the temporary list
+while :
+do
+    # Prompt user for GitHub repository URL
+    repo_url=$(zenity --entry --title="GitHub Repository URL" --text="Enter GitHub repository URL:" --width=400 --window-icon="$parent_window_id")
+
+    # Check if the user clicked Cancel or closed the dialog
+    if [ $? -ne 0 ]; then
+        break
+    fi
+
+    # Append the URL to the temporary list file
+    echo "$repo_url" >> "$temp_list_file"
+done
+
+# Check if the temporary list file is not empty
+if [ -s "$temp_list_file" ]; then
+    # Prompt user for the folder path within the repository
+    folder_path=$(zenity --entry --title="Folder Path" --text="Enter folder path within the repository:" --width=400 --window-icon="$parent_window_id")
+
+    # Check if the user clicked Cancel or closed the dialog
+    if [ $? -eq 0 ]; then
+        # Prompt user for destination folder on the local machine
+        destination_folder=$(zenity --file-selection --directory --title="Select Destination Folder" --filename="$HOME" --window-icon="$parent_window_id")
+
+        # Check if the user clicked Cancel or closed the dialog
+        if [ $? -eq 0 ]; then
+            # Save the chosen directory to the config file
+            echo "$destination_folder" > "$config_file"
+
+            # Download repositories from the list
+            while IFS= read -r repo_url; do
+                # Download the ZIP archive of the specified folder
+                curl -LkSs "$repo_url/archive/refs/heads/main.zip" -o "$destination_folder.zip"
+
+                # Unzip the archive and remove unnecessary files
+                unzip -qq "$destination_folder.zip" "$repo_url-main/$folder_path/*" -d "$destination_folder"
+                rm "$destination_folder.zip"
+
+                # Provide success message
+                zenity --info --title="Success" --text="Folder downloaded successfully to: $destination_folder" --window-icon="$parent_window_id"
+            done < "$temp_list_file"
+        fi
+    fi
+fi
