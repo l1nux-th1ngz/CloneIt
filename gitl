@@ -1,15 +1,41 @@
 #!/bin/bash
 
-# Prompt user for GitLab credentials
-gitlab_username=$(zenity --entry --title="GitLab Credentials" --text="Enter your GitLab username:")
-gitlab_token=$(zenity --password --title="GitLab Credentials" --text="Enter your GitLab personal access token:")
+# Configuration file
+config_file="$HOME/.gitlab_download_config"
 
-# Replace placeholders with the obtained credentials
+# Read the last used directory and GitLab credentials from the config file
+if [ -f "$config_file" ]; then
+    source "$config_file"
+else
+    # Set default values if the config file doesn't exist
+    last_used_directory="$HOME"
+    gitlab_username=""
+    gitlab_token=""
+fi
+
+# Function to prompt for GitLab credentials and download directory
+get_credentials_and_directory() {
+    gitlab_username=$(zenity --entry --title="GitLab Credentials" --text="Enter your GitLab username:" --entry-text="$gitlab_username")
+    gitlab_token=$(zenity --password --title="GitLab Credentials" --text="Enter your GitLab personal access token:" --entry-text="$gitlab_token")
+    last_used_directory=$(zenity --file-selection --directory --title="Select Download Directory" --filename="$last_used_directory")
+    
+    # Save the configuration to the file
+    echo "last_used_directory=\"$last_used_directory\"" > "$config_file"
+    echo "gitlab_username=\"$gitlab_username\"" >> "$config_file"
+    echo "gitlab_token=\"$gitlab_token\"" >> "$config_file"
+}
+
+# If either GitLab username or token is empty, prompt for credentials
+if [ -z "$gitlab_username" ] || [ -z "$gitlab_token" ]; then
+    get_credentials_and_directory
+fi
+
+# Replace placeholders with the obtained credentials and directory
 gitlab_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
 
 # Clone repositories in the background
 for repo in "${gitlab_repositories[@]}"; do
-    git clone --quiet "https://$gitlab_token@gitlab.com/$gitlab_username/$repo.git" &
+    git clone --quiet "https://$gitlab_token@gitlab.com/$gitlab_username/$repo.git" "$last_used_directory/$repo" &
 done
 
 # Wait for all background jobs to finish
