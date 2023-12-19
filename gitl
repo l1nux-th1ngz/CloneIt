@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Prompt user for GitLab credentials
+gitlab_username=$(zenity --entry --title="GitLab Credentials" --text="Enter your GitLab username:")
+gitlab_token=$(zenity --password --title="GitLab Credentials" --text="Enter your GitLab personal access token:")
+
+# Replace placeholders with the obtained credentials
+gitlab_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
+
+# Clone repositories in the background
+for repo in "${gitlab_repositories[@]}"; do
+    git clone --quiet "https://$gitlab_token@gitlab.com/$gitlab_username/$repo.git" &
+done
+
+# Wait for all background jobs to finish
+wait
+
+# Keep the script running until manually closed
+zenity --info --title="Download Complete" --text="Downloads have finished. You can close this window when ready."
+sleep infinity
