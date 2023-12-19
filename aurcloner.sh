@@ -56,34 +56,8 @@ do
             # Set the chosen directory to the Git-Clones directory in the home folder
             chosen_directory=$HOME/Git-Clones/$repo_name
 
-            # Clone the repository
-            git clone "$aur_repo_url" "$chosen_directory" &
-
-            # Navigate to the downloaded directory
-            cd "$chosen_directory" || exit 1
-
-            # Build the AUR package
-            makepkg -si
-
-            # Check if the build was successful
-            wait $!
-            if [ $? -eq 0 ]; then
-                # Ask the user if they want to copy the folder to .config
-                read -p "Would you like to copy this folder to .config? (yes/no): " choice
-                if [ "$choice" = "yes" ]; then
-                    cp -r "$chosen_directory" "$HOME/.config/$(basename "$chosen_directory")" &
-                    wait $!
-                    echo "Folder copied to .config successfully."
-                else
-                    echo "Folder not copied."
-                fi
-            else
-                read -p "Build failed. Would you like to see the build output? (yes/no): " choice
-                if [ "$choice" = "yes" ]; then
-                    # Display the build output
-                    cat PKGBUILD
-                fi
-            fi
+            # Clone the repository and install the package
+            git clone "$aur_repo_url" "$chosen_directory" && cd "$chosen_directory" && makepkg -si
             
             break
             ;;
