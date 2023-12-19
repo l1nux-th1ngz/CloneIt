@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Prompt user for Codeberg credentials
+codeberg_username=$(zenity --entry --title="Codeberg Credentials" --text="Enter your Codeberg username:")
+codeberg_token=$(zenity --password --title="Codeberg Credentials" --text="Enter your Codeberg personal access token:")
+
+# Replace placeholders with the obtained credentials
+codeberg_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
+
+# Clone repositories in the background
+for repo in "${codeberg_repositories[@]}"; do
+    git clone --quiet "https://$codeberg_token@codeberg.org/$codeberg_username/$repo.git" &
+done
+
+# Wait for all background jobs to finish
+wait
+
+# Keep the script running until manually closed
+zenity --info --title="Download Complete" --text="Downloads have finished. You can close this window when ready."
+sleep infinity
