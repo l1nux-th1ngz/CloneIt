@@ -61,7 +61,7 @@ case $operation in
         clone_and_install "$aur_repo_url" "$chosen_directory"
 
         # Ask the user if they want to copy and link the folder in .config
-        whiptail --yesno "Hello! Would you like to copy and link this folder in your .config?" 10 60 --title "Confirmation"
+        whiptail --yesno "!!!!!!!! Would you like to copy and link this folder in .config????" 10 60 --title "Confirmation"
         response=$?
 
         # Interpret the user's response
@@ -75,7 +75,7 @@ case $operation in
         ;;
     *)
         whiptail --msgbox "Invalid option. Exiting." 10 60 --title "Error"
-        exit 1
+        
         ;;
 esac
 
