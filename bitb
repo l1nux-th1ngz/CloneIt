@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Prompt user for Bitbucket credentials
+bitbucket_username=$(zenity --entry --title="Bitbucket Credentials" --text="Enter your Bitbucket username:")
+bitbucket_app_password=$(zenity --password --title="Bitbucket Credentials" --text="Enter your Bitbucket app password:")
+
+# Replace placeholders with the obtained credentials
+bitbucket_repositories=("your_repository1_here" "your_repository2_here" "your_repository3_here")
+
+# Clone repositories in the background
+for repo in "${bitbucket_repositories[@]}"; do
+    git clone --quiet "https://$bitbucket_username:$bitbucket_app_password@bitbucket.org/$bitbucket_username/$repo.git" &
+done
+
+# Wait for all background jobs to finish
+wait
+
+# Keep the script running until manually closed
+zenity --info --title="Download Complete" --text="Downloads have finished. You can close this window when ready."
+sleep infinity
