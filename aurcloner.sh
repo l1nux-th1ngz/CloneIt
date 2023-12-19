@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Create Git-Clones directory in the home folder
+mkdir -p ~/Git-Clones
+
 # Get the current username
 current_user=$(whoami)
 
@@ -12,15 +15,20 @@ What are we doing today?
 1. Just Cloning For Now
 2. I'll Be Cloning and Installing" 25 80
 
-# Get AUR repository URL and chosen directory from the user
+# Get AUR repository URL from the user
 aur_repo_url=$(whiptail --inputbox "Enter AUR Repository URL:" 10 60 --title "AUR Downloader" 3>&1 1>&2 2>&3)
-chosen_directory=$(whiptail --inputbox "Enter Download Directory:" 10 60 --title "AUR Downloader" "$HOME/" 3>&1 1>&2 2>&3)
 
 # Verify the input is not empty
-if [ -z "$aur_repo_url" ] || [ -z "$chosen_directory" ]; then
-    whiptail --msgbox "Repository URL and download directory cannot be empty. Exiting." 10 60 --title "Error" --exitstatus 1
+if [ -z "$aur_repo_url" ]; then
+    whiptail --msgbox "Repository URL cannot be empty. Exiting." 10 60 --title "Error" --exitstatus 1
     exit 1
 fi
+
+# Extract the name of the repository from the URL
+repo_name=$(basename "$aur_repo_url" .git)
+
+# Set the chosen directory to the Git-Clones directory in the home folder
+chosen_directory="~/Git-Clones/$repo_name"
 
 # Clone the repository
 git clone "$aur_repo_url" "$chosen_directory"
@@ -38,13 +46,9 @@ if [ $? -eq 0 ]; then
 
     # Check if the installation was successful
     if [ $? -eq 0 ]; then
-        # Ask the user if they want to copy the folder to .config
-        if (whiptail --yesno "Would you like to copy this folder to .config?" 10 60 --title "Confirmation"); then
-            sudo cp -r "$chosen_directory" "$HOME/.config/$(basename "$chosen_directory")"
-            whiptail --msgbox "Folder copied to .config successfully." 10 60 --title "Success"
-        else
-            whiptail --msgbox "Folder not copied." 10 60 --title "Information"
-        fi
+        # Clean up the directory after installation
+        rm -rf "$chosen_directory"
+        whiptail --msgbox "Installation successful and directory cleaned." 10 60 --title "Success"
     else
         whiptail --msgbox "Installation failed. Please check the build output." 10 60 --title "Error"
     fi
