@@ -31,7 +31,7 @@ do
             repo_name=$(basename "$aur_repo_url" .git)
 
             # Set the chosen directory to the Git-Clones directory in the home folder
-            chosen_directory="~/Git-Clones/$repo_name"
+            chosen_directory=$HOME/Git-Clones/$repo_name
 
             # Clone the repository
             git clone "$aur_repo_url" "$chosen_directory" &
@@ -54,7 +54,7 @@ do
             repo_name=$(basename "$aur_repo_url" .git)
 
             # Set the chosen directory to the Git-Clones directory in the home folder
-            chosen_directory="~/Git-Clones/$repo_name"
+            chosen_directory=$HOME/Git-Clones/$repo_name
 
             # Clone the repository
             git clone "$aur_repo_url" "$chosen_directory" &
@@ -63,7 +63,7 @@ do
             cd "$chosen_directory" || exit 1
 
             # Build the AUR package
-            makepkg -s
+            makepkg -si
 
             # Check if the build was successful
             wait $!
