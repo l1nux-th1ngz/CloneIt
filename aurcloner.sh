@@ -1,40 +1,5 @@
 #!/bin/bash
 
-# Function to clone the AUR repository and install the package
-clone_and_install() {
-    repo_url="$1"
-    chosen_directory="$2"
-
-    # Clone the repository
-    git clone "$repo_url" "$chosen_directory"
-
-    # Navigate to the downloaded directory
-    cd "$chosen_directory" || exit 1
-
-    # Build and install the AUR package
-    makepkg -si
-
-    # Check if the installation was successful
-    if [ $? -eq 0 ]; then
-        # Ask the user if they want to copy the folder to .config
-        whiptail --yesno "Would you like to copy this folder to .config?" 10 60 --title "Confirmation"
-        response=$?
-
-        # Interpret the user's response
-        if [ $response -eq 0 ]; then
-            cp -r "$chosen_directory" "$HOME/.config/$(basename "$chosen_directory")"
-            whiptail --msgbox "Folder copied to .config successfully." 10 60 --title "Success"
-        else
-            whiptail --msgbox "Folder not copied." 10 60 --title "Information"
-        fi
-    else
-        whiptail --msgbox "Installation failed. Please check the build output." 10 60 --title "Error"
-    fi
-
-    # Display the overall duration
-    whiptail --msgbox "Process completed." 10 60 --title "Duration"
-}
-
 # Get the current username
 current_user=$(whoami)
 
@@ -57,26 +22,31 @@ if [ -z "$aur_repo_url" ] || [ -z "$chosen_directory" ]; then
     exit 1
 fi
 
-# Display a radiolist to choose the operation
-operation=$(whiptail --title "Choose Operation" --radiolist "Select an operation:" 15 60 2 \
-    "1" "Just Cloning For Now" ON \
-    "2" "I'll Be Cloning and Installing" OFF 3>&1 1>&2 2>&3)
+# Clone the repository
+git clone "$aur_repo_url" "$chosen_directory"
 
-# Process user's choice
-case $operation in
-    "1")
-        # Clone the repository
-        git clone "$aur_repo_url" "$chosen_directory"
-        whiptail --msgbox "Repository cloned successfully." 10 60 --title "Success"
-        ;;
-    "2")
-        # Clone the repository and install the AUR package
-        clone_and_install "$aur_repo_url" "$chosen_directory"
-        ;;
-    *)
-        whiptail --msgbox "Invalid option. Exiting." 10 60 --title "Error"
-        ;;
-esac
+# Navigate to the downloaded directory
+cd "$chosen_directory" || exit 1
+
+# Build and install the AUR package
+makepkg -si
+
+# Check if the installation was successful
+if [ $? -eq 0 ]; then
+    # Ask the user if they want to copy the folder to .config
+    whiptail --yesno "Would you like to copy this folder to .config?" 10 60 --title "Confirmation"
+    response=$?
+
+    # Interpret the user's response
+    if [ $response -eq 0 ]; then
+        cp -r "$chosen_directory" "$HOME/.config/$(basename "$chosen_directory")"
+        whiptail --msgbox "Folder copied to .config successfully." 10 60 --title "Success"
+    else
+        whiptail --msgbox "Folder not copied." 10 60 --title "Information"
+    fi
+else
+    whiptail --msgbox "Installation failed. Please check the build output." 10 60 --title "Error"
+fi
 
 # Wait for user input before exiting
 whiptail --msgbox "Press OK to exit." 10 60
