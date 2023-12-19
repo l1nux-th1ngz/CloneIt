@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Update system packages
+sudo pacman -Syu --noconfirm
+
+# Install subversion
+sudo pacman -S subversion
+
+# Create config file if it doesn't exist
+mkdir -p ~/.subversion
+touch ~/.subversion/config
+
+# Write settings to config file
+echo "[auth]" >> ~/.subversion/config
+echo "store-passwords = yes" >> ~/.subversion/config
+echo "store-plaintext-passwords = yes" >> ~/.subversion/config
+echo "[tunnels]" >> ~/.subversion/config
+echo "ssh = \$SVN_SSH ssh -q" >> ~/.subversion/config
+echo "[helpers]" >> ~/.subversion/config
+echo "editor-cmd = geany" >> ~/.subversion/config
+
+# Create repository
+sudo svnadmin create /opt/my_svn_repo
+
+# Set ownership and permissions
+username=$(whoami)
+group=$(id -gn "$username")
+echo "Detected username: $username"
+echo "Detected group: $group"
+sudo chown -R $username:$group /opt/my_svn_repo
+sudo chmod -R 770 /opt/my_svn_repo
+
+# Check out a repo
+svn checkout file:///opt/my_svn_repo
+
+# Add files to the repository
+read -p "Enter the file you want to add: " file
+svn add $file
+
+# Commit changes
+read -p "Enter your commit message: " message
+svn commit -m "$message"
+
+# Update or keep current
+read -p "Do you want to update your working copy? (yes/no): " choice
+if [ "$choice" = "yes" ]; then
+    svn update
+fi
+
+# View log
+svn log
+
+# Resolve conflicts
+read -p "Enter the path to the conflicting file: " conflict_file
+svn resolved $conflict_file
