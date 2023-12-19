@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Function to clone the AUR repository
-clone_repo() {
-    repo_url="$1"
-    chosen_directory="$2"
-
-    # Clone the repository
-    git clone "$repo_url" "$chosen_directory"
-}
-
 # Function to clone the AUR repository and install the package
 clone_and_install() {
     repo_url="$1"
@@ -17,9 +8,8 @@ clone_and_install() {
     # Clone the repository
     git clone "$repo_url" "$chosen_directory"
 
-    # Install the AUR package
-    cd "$chosen_directory" || exit 1
-    makepkg -si
+    # Navigate to the downloaded directory and install the AUR package
+    (cd "$chosen_directory" && makepkg -si)
 }
 
 # Get the current username
@@ -53,7 +43,7 @@ operation=$(whiptail --title "Choose Operation" --radiolist "Select an operation
 case $operation in
     "1")
         # Clone the repository
-        clone_repo "$aur_repo_url" "$chosen_directory"
+        git clone "$aur_repo_url" "$chosen_directory"
         whiptail --msgbox "Repository cloned successfully." 10 60 --title "Success"
         ;;
     "2")
