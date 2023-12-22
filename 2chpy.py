@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTextEdit, QLineEdit, QDialog, QLabel, QFormLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTextEdit, QLineEdit, QDialog, QLabel, QFormLayout, QCheckBox
+import os
 
 class LoginDialog(QDialog):
     def __init__(self):
@@ -6,13 +7,15 @@ class LoginDialog(QDialog):
 
         self.setWindowTitle('Login')
 
-        self.username = QLineEdit()
+        self.email = QLineEdit()
         self.password = QLineEdit()
         self.password.setEchoMode(QLineEdit.Password)
+        self.remember = QCheckBox("Remember me")
 
         layout = QFormLayout()
-        layout.addRow(QLabel('Username'), self.username)
+        layout.addRow(QLabel('Email'), self.email)
         layout.addRow(QLabel('Password'), self.password)
+        layout.addRow(self.remember)
 
         login_button = QPushButton('Login')
         login_button.clicked.connect(self.accept)
@@ -32,6 +35,10 @@ class MyApp(QWidget):
         btn = QPushButton('Submit', self)
         btn.clicked.connect(self.buttonClicked)
 
+        # Create a Save Chat button
+        save_btn = QPushButton('Save Chat', self)
+        save_btn.clicked.connect(self.saveChat)
+
         # Create a QTextEdit
         self.textEdit = QTextEdit()
         self.textEdit.setReadOnly(True)
@@ -44,6 +51,7 @@ class MyApp(QWidget):
         vbox.addWidget(self.textEdit)
         vbox.addWidget(self.lineEdit)
         vbox.addWidget(btn)
+        vbox.addWidget(save_btn)
 
         self.setLayout(vbox)
 
@@ -59,8 +67,13 @@ class MyApp(QWidget):
         # Display the response in the QTextEdit
         self.textEdit.append("User: " + text + "\n" + "ChatGPT: " + "Response")
 
+    def saveChat(self):
+        # Save the chat history to a .txt file
+        with open('chat_history.txt', 'w') as f:
+            f.write(self.textEdit.toPlainText())
+
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QApplication([])
 
     login = LoginDialog()
 
