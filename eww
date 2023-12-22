@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Update the package lists for upgrades and new package installations
+sudo pacman -Syu
+
+# Install the necessary dependencies for Eww
+sudo pacman -S --needed base-devel git rust gtk3
+
+# Clone the Eww repository
+git clone https://github.com/elkowar/eww
+
+# Move into the cloned directory
+cd eww
+
+# Build Eww
+cargo build --release
+
+
+# Create a directory for Eww in .config
+mkdir -p ~/.config/eww
+
+# Copy the example Eww configuration files to .config/eww
+cp -r examples/eww-bar/* ~/.config/eww/
