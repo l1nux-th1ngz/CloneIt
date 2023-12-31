@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# auto git clone
+echo "Enter the Git link:"
+read REPO_URL
+
+echo "Enter Branch (Press Enter for the default branch):"
+read BRANCH
+
+echo "Enter Folder (Press Enter for the entire repository):"
+read FOLDER
+
+# Check if the user has entered a branch and folder
+if [ -z "$BRANCH" ]
+then
+  BRANCH="master"
+fi
+
+if [ -z "$FOLDER" ]
+then
+  FOLDER="."
+fi
+
+echo "Cloning $REPO_URL at branch $BRANCH, folder: $FOLDER"
+git clone --depth=1 --branch=$BRANCH $REPO_URL.git $FOLDER
